@@ -1753,9 +1753,9 @@
 
     <!-- ZK Clock Style -->
     <string name="cvx_lab_title">cvxLAB</string>
-    <string name="system_ui_statusbar_zk_clock_style_title">cvxLAB</string>
+    <string name="system_ui_statusbar_zk_clock_style_title">Clock Style</string>
     <string name="system_ui_statusbar_zk_clock_style_summary">Custom status bar clock styles for cvxLAB</string>
-    <string name="system_ui_statusbar_zk_clock_style_enable">Enable cvxLAB Clock Styles</string>
+    <string name="system_ui_statusbar_zk_clock_style_enable">Enable Clock Styles</string>
     <string name="system_ui_statusbar_zk_clock_style_select">Clock style</string>
     <string name="zk_style_0">Default (System)</string>
     <string name="zk_style_1">Accent Pill</string>
@@ -1783,5 +1783,5 @@
     <string name="zk_style_23">Iconify Style 8 (Bebas Stacked)</string>
     <string name="zk_style_24">Iconify Style 9 (Gradient Capsule)</string>
     <string name="system_ui_statusbar_zk_clock_style_iconify_bg">Enable Background for Iconify Styles</string>
-    <string name="system_ui_statusbar_zk_clock_style_scale">cvxLAB Clock Scale</string>
+    <string name="system_ui_statusbar_zk_clock_style_scale">Clock Scale</string>
 </resources>

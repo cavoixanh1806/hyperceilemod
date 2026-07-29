@@ -1646,9 +1646,9 @@
 
     <!-- ZK Clock Style -->
     <string name="cvx_lab_title">cvxLAB</string>
-    <string name="system_ui_statusbar_zk_clock_style_title">cvxLAB</string>
+    <string name="system_ui_statusbar_zk_clock_style_title">Kiểu đồng hồ</string>
     <string name="system_ui_statusbar_zk_clock_style_summary">Giao diện đồng hồ tùy chỉnh cho cvxLAB</string>
-    <string name="system_ui_statusbar_zk_clock_style_enable">Bật kiểu đồng hồ cvxLAB</string>
+    <string name="system_ui_statusbar_zk_clock_style_enable">Bật kiểu đồng hồ</string>
     <string name="system_ui_statusbar_zk_clock_style_select">Kiểu đồng hồ</string>
     <string name="zk_style_0">Mặc định (Hệ thống)</string>
     <string name="zk_style_1">Viên thuốc màu nhấn</string>
@@ -1676,5 +1676,5 @@
     <string name="zk_style_23">Iconify Kiểu 8 (Bebas Chồng dọc)</string>
     <string name="zk_style_24">Iconify Kiểu 9 (Hộp bo cong Gradient)</string>
     <string name="system_ui_statusbar_zk_clock_style_iconify_bg">Bật nền hộp cho các kiểu Iconify</string>
-    <string name="system_ui_statusbar_zk_clock_style_scale">Tỷ lệ kích thước đồng hồ cvxLAB</string>
+    <string name="system_ui_statusbar_zk_clock_style_scale">Tỷ lệ kích thước đồng hồ</string>
 </resources>
