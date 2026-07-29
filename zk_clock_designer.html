@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZK Clock Style Designer & Previewer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: rgba(20, 27, 45, 0.7);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --accent-color: #4f46e5;
+            --accent-glow: rgba(79, 70, 229, 0.4);
+            --text-color: #e2e8f0;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        header {
+            padding: 2rem;
+            background: linear-gradient(180deg, rgba(79, 70, 229, 0.1) 0%, transparent 100%);
+            border-bottom: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: -0.05em;
+            background: linear-gradient(90deg, #818cf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        .main-container {
+            display: grid;
+            grid-template-columns: 1fr 450px;
+            gap: 2rem;
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 2rem;
+            flex-grow: 1;
+        }
+
+        @media (max-width: 1024px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Status Bar Simulator */
+        .status-bar-container {
+            background-color: #0f172a;
+            border-radius: 8px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .theme-toggle-bar {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            justify-content: flex-end;
+        }
+
+        .theme-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .theme-btn.active {
+            background: var(--accent-color);
+            color: white;
+            box-shadow: 0 0 10px var(--accent-glow);
+            border-color: transparent;
+        }
+
+        .status-bar {
+            height: 48px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            font-size: 12px;
+            font-weight: 600;
+            transition: background-color 0.3s;
+            border-radius: 6px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .status-bar.dark-mode {
+            background-color: #000000;
+            color: #ffffff;
+        }
+
+        .status-bar.light-mode {
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+
+        .status-bar-left {
+            display: flex;
+            align-items: center;
+            height: 100%;
+        }
+
+        .status-bar-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            opacity: 0.8;
+        }
+
+        /* ZK CLOCK LAYOUT ENGINE */
+        .zk-clock-wrapper {
+            display: flex;
+            align-items: center;
+            height: 100%;
+        }
+
+        .zk-clock-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            transition: all 0.2s ease;
+        }
+
+        .zk-time-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+        }
+
+        .zk-time-view {
+            font-family: sans-serif;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+            box-sizing: border-box;
+        }
+
+        .zk-date-text-view {
+            font-family: sans-serif;
+            font-weight: bold;
+            line-height: 1.05;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .zk-date-num-view {
+            font-family: sans-serif;
+            font-weight: bold;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Controls Panel */
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        select {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
+            color: white;
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .slider-group {
+            background: rgba(15, 23, 42, 0.4);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            margin-bottom: 0.75rem;
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .slider-title {
+            color: #cbd5e1;
+            font-weight: 600;
+        }
+
+        .slider-value {
+            font-family: 'JetBrains Mono', monospace;
+            color: #818cf8;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            accent-color: var(--accent-color);
+            cursor: pointer;
+        }
+
+        /* Code Exporter */
+        .code-box {
+            position: relative;
+        }
+
+        pre {
+            background: #020617;
+            padding: 1.25rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: #38bdf8;
+            line-height: 1.5;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--border-color);
+            color: white;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: var(--accent-color);
+            border-color: transparent;
+        }
+
+        .preset-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .preset-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 0.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .preset-btn:hover, .preset-btn.active {
+            background: rgba(79, 70, 229, 0.15);
+            border-color: var(--accent-color);
+            color: #818cf8;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>ZK Status Bar Clock Designer</h1>
+        <p class="subtitle">Tùy chỉnh khoảng cách và bố cục trực quan cho các kiểu đồng hồ ZK Mods</p>
+    </header>
+
+    <div class="main-container">
+        
+        <div class="workspace">
+            
+            <div class="card">
+                <div class="card-title">
+                    <span>Mô phỏng Thanh trạng thái (Status Bar)</span>
+                    <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: normal;">* Tương thích giao diện Sáng/Tối</span>
+                </div>
+                
+                <div class="status-bar-container">
+                    <div class="theme-toggle-bar">
+                        <button class="theme-btn active" id="themeDark" onclick="setTheme('dark')">Nền Tối</button>
+                        <button class="theme-btn" id="themeLight" onclick="setTheme('light')">Nền Sáng</button>
+                    </div>
+                    
+                    <div class="status-bar dark-mode" id="statusBar">
+                        <div class="status-bar-left">
+                            <div class="zk-clock-wrapper">
+                                <div class="zk-clock-container" id="zkClock">
+                                    <div class="zk-time-badge" id="zkTimeBadge">
+                                        <div class="zk-time-view" id="zkTime">19:47:51</div>
+                                    </div>
+                                    <div class="zk-date-text-view" id="zkDateText">
+                                        <span id="zkDateLine1">Th 4</span>
+                                        <span id="zkDateLine2">thg 7</span>
+                                    </div>
+                                    <div class="zk-date-num-view" id="zkDateNum">29</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="status-bar-right">
+                            <span>📶</span>
+                            <span>📶</span>
+                            <span>📶</span>
+                            <span style="border: 1px solid currentColor; padding: 1px 3px; border-radius: 3px; font-size: 9px;">46%</span>
+                            <span>⚡</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card code-box">
+                <div class="card-title" id="codeTitle">Kotlin Code Builder (Style 5)</div>
+                <button class="copy-btn" onclick="copyCode()">Copy Code</button>
+                <pre><code id="codeOutput">Loading parameters...</code></pre>
+            </div>
+
+        </div>
+
+        <div class="card controls">
+            <div class="card-title">Bảng Điều Khiển</div>
+
+            <div class="form-group">
+                <label>Chọn kiểu đồng hồ (ZK Style)</label>
+                <select id="styleSelect" onchange="loadStyle(this.value)">
+                    <option value="5" selected>Style 5: Badge + Seconds (Active)</option>
+                    <option value="11">Style 11: White Pill + Black Time Inner</option>
+                </select>
+                
+                <div class="preset-grid">
+                    <button class="preset-btn active" id="btn-s5" onclick="loadStyle(5)">Style 5</button>
+                    <button class="preset-btn" id="btn-s11" onclick="loadStyle(11)">Style 11</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Ngôn ngữ hiển thị (Mô phỏng)</label>
+                <div style="display: flex; gap: 0.5rem; margin-top: 0.2rem;">
+                    <button class="theme-btn active" id="localeVi" onclick="setLocale('vi')">Tiếng Việt (Th 4 thg 7)</button>
+                    <button class="theme-btn" id="localeEn" onclick="setLocale('en')">Tiếng Anh (Wed Jul)</button>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 1rem;">
+                <label>THÔNG SỐ BỐ CỤC (Real-time Pixels)</label>
+                
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <span class="slider-title">Kích thước chữ Giờ</span>
+                        <span class="slider-value" id="val-time-size">12dp</span>
+                    </div>
+                    <input type="range" id="time-size" min="9" max="18" step="0.5" value="12" oninput="updateParam('time-size', this.value)">
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <span class="slider-title">Kích thước chữ Thứ/Tháng</span>
+                        <span class="slider-value" id="val-date-size">6.5dp</span>
+                    </div>
+                    <input type="range" id="date-size" min="5" max="12" step="0.5" value="6.5" oninput="updateParam('date-size', this.value)">
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <span class="slider-title">Kích thước chữ Ngày</span>
+                        <span class="slider-value" id="val-num-size">12dp</span>
+                    </div>
+                    <input type="range" id="num-size" min="9" max="18" step="0.5" value="12" oninput="updateParam('num-size', this.value)">
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <span class="slider-title">Margin Trái của khối Thứ/Tháng</span>
+                        <span class="slider-value" id="val-date-margin">3dp</span>
+                    </div>
+                    <input type="range" id="date-margin" min="-10" max="15" step="0.5" value="3" oninput="updateParam('date-margin', this.value)">
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <span class="slider-title">Margin Trái của khối Ngày</span>
+                        <span class="slider-value" id="val-num-margin">1.5dp</span>
+                    </div>
+                    <input type="range" id="num-margin" min="-15" max="10" step="0.5" value="1.5" oninput="updateParam('num-margin', this.value)">
+                </div>
+                
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <span class="slider-title">Độ rộng tối đa Ems (Thứ/Tháng)</span>
+                        <span class="slider-value" id="val-max-ems">2</span>
+                    </div>
+                    <input type="range" id="max-ems" min="1" max="6" step="1" value="2" oninput="updateParam('max-ems', this.value)">
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        let currentStyle = 5;
+        let currentTheme = 'dark';
+        let currentLocale = 'vi';
+
+        const styles = {
+            5: {
+                timeSize: 12,
+                dateSize: 6.5,
+                numSize: 12,
+                dateMargin: 3,
+                numMargin: 1.5,
+                maxEms: 2
+            },
+            11: {
+                timeSize: 13,
+                dateSize: 7.5,
+                numSize: 13,
+                dateMargin: 2,
+                numMargin: -3,
+                maxEms: 2
+            }
+        };
+
+        const styleThemeDetails = {
+            5: { 
+                bg: 'rgba(57, 185, 129, 0.25)', 
+                border: '1px solid rgba(255,255,255,0.7)', 
+                timeColor: '#ffffff', 
+                dateColor: '#34d399', 
+                numColor: '#34d399', 
+                innerTimeBg: 'rgba(16, 185, 129, 0.8)', 
+                innerTimeBorder: '1px solid #ffffff',
+                innerTimePadding: '0.5px 5px 1px 5px', 
+                radius: '15px' 
+            },
+            11: { 
+                bg: '#ffffff', 
+                border: 'none', 
+                timeColor: '#ffffff', 
+                dateColor: '#000000', 
+                numColor: '#ef4444', 
+                innerTimeBg: '#000000', 
+                innerTimeBorder: 'none',
+                innerTimePadding: '0px 4px 1px 4px', 
+                radius: '20px' 
+            }
+        };
+
+        function loadStyle(styleId) {
+            currentStyle = parseInt(styleId);
+            
+            document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
+            const activeBtn = document.getElementById('btn-s' + currentStyle);
+            if (activeBtn) activeBtn.classList.add('active');
+            document.getElementById('styleSelect').value = currentStyle;
+
+            const cfg = styles[currentStyle];
+            document.getElementById('time-size').value = cfg.timeSize;
+            document.getElementById('date-size').value = cfg.dateSize;
+            document.getElementById('num-size').value = cfg.numSize;
+            document.getElementById('date-margin').value = cfg.dateMargin;
+            document.getElementById('num-margin').value = cfg.numMargin;
+            document.getElementById('max-ems').value = cfg.maxEms;
+
+            document.getElementById('val-time-size').innerText = cfg.timeSize + 'dp';
+            document.getElementById('val-date-size').innerText = cfg.dateSize + 'dp';
+            document.getElementById('val-num-size').innerText = cfg.numSize + 'dp';
+            document.getElementById('val-date-margin').innerText = cfg.dateMargin + 'dp';
+            document.getElementById('val-num-margin').innerText = cfg.numMargin + 'dp';
+            document.getElementById('val-max-ems').innerText = cfg.maxEms;
+
+            document.getElementById('codeTitle').innerText = `Kotlin Code Builder (Style ${currentStyle})`;
+
+            const timeView = document.getElementById('zkTime');
+            if (currentStyle === 5) {
+                timeView.innerText = "19:47:51";
+            } else {
+                timeView.innerText = "19:48";
+            }
+
+            applyLayout();
+        }
+
+        function updateParam(param, val) {
+            const numVal = parseFloat(val);
+            document.getElementById('val-' + param).innerText = val + (param === 'max-ems' ? '' : 'dp');
+            
+            const camelKey = param.replace(/-([a-z])/g, g => g[1].toUpperCase());
+            styles[currentStyle][camelKey] = numVal;
+
+            applyLayout();
+        }
+
+        function setLocale(lang) {
+            currentLocale = lang;
+            document.getElementById('localeVi').classList.toggle('active', lang === 'vi');
+            document.getElementById('localeEn').classList.toggle('active', lang === 'en');
+
+            const l1 = document.getElementById('zkDateLine1');
+            const l2 = document.getElementById('zkDateLine2');
+
+            if (lang === 'vi') {
+                l1.innerText = 'Th 4';
+                l2.innerText = 'thg 7';
+            } else {
+                l1.innerText = 'Wed';
+                l2.innerText = 'Jul';
+            }
+            applyLayout();
+        }
+
+        function setTheme(theme) {
+            currentTheme = theme;
+            const bar = document.getElementById('statusBar');
+            bar.className = 'status-bar ' + (theme === 'light' ? 'light-mode' : 'dark-mode');
+            document.getElementById('themeDark').classList.toggle('active', theme === 'dark');
+            document.getElementById('themeLight').classList.toggle('active', theme === 'light');
+        }
+
+        function applyLayout() {
+            const cfg = styles[currentStyle];
+            const theme = styleThemeDetails[currentStyle] || {};
+
+            const container = document.getElementById('zkClock');
+            const timeBadge = document.getElementById('zkTimeBadge');
+            const timeView = document.getElementById('zkTime');
+            const dateTextView = document.getElementById('zkDateText');
+            const dateNumView = document.getElementById('zkDateNum');
+
+            container.style.background = theme.bg || 'transparent';
+            container.style.border = theme.border || 'none';
+            container.style.borderRadius = theme.radius || '20px';
+            container.style.padding = currentStyle === 5 ? '0 5px 0 0' : '2px 8px';
+
+            timeBadge.style.background = theme.innerTimeBg || 'transparent';
+            timeBadge.style.border = theme.innerTimeBorder || 'none';
+            timeBadge.style.padding = theme.innerTimePadding || '0';
+            timeBadge.style.borderRadius = theme.radius || '15px';
+
+            timeView.style.color = theme.timeColor || '#ffffff';
+            timeView.style.fontSize = (cfg.timeSize * 1.1) + 'px'; 
+
+            dateTextView.style.fontSize = (cfg.dateSize * 1.1) + 'px';
+            dateTextView.style.color = theme.dateColor || '#000000';
+            dateTextView.style.marginLeft = (cfg.dateMargin * 1.1) + 'px';
+            dateTextView.style.width = (cfg.maxEms * 12) + 'px'; 
+            
+            dateNumView.style.fontSize = (cfg.numSize * 1.1) + 'px';
+            dateNumView.style.color = theme.numColor || '#ef4444';
+            dateNumView.style.marginLeft = (cfg.numMargin * 1.1) + 'px';
+
+            generateCode();
+        }
+
+        function generateCode() {
+            const cfg = styles[currentStyle];
+            let code = "";
+            if (currentStyle === 5) {
+                code = `// --- RENDER STYLE 5 IN KOTLIN ---
+private fun buildStyle5(context: Context): View {
+    val accent600 = resolveColor(context, "accent1_600", 0xFF1B6EF3.toInt())
+
+    return LinearLayout(context).apply {
+        orientation = LinearLayout.HORIZONTAL
+        gravity = Gravity.CENTER
+        background = ZkClockDrawables.getContainerBackground(5, context)
+        // Background1 padding: right 5dp, layout: top -1dp
+        setPadding(0, dpToPx(context, -1f), dpToPx(context, 5f), 0)
+
+        // Inner time badge
+        val timeBadge = LinearLayout(context).apply {
+            background = ZkClockDrawables.getInnerTimeBackground(5, context)
+            // Background2 padding: left 5dp, top 0.5dp, right 5dp, bottom 1dp
+            setPadding(dpToPx(context, 5f), dpToPx(context, 0.5f), dpToPx(context, 5f), dpToPx(context, 1f))
+            
+            addView(createTextClock(context, "hh:mm:ss", "HH:mm:ss", textSizeDp = ${cfg.timeSize}f, textColor = Color.WHITE))
+        }
+        addView(timeBadge)
+
+        // Day/month text
+        addView(createTextClock(context, "EEE MMM", "EEE MMM", textSizeDp = ${cfg.dateSize}f, textColor = accent600, singleLine = false, maxEms = ${cfg.maxEms}),
+            createParams(context, leftDp = ${cfg.dateMargin}f)
+        )
+        // Day number
+        addView(createTextClock(context, "dd", "dd", textSizeDp = ${cfg.numSize}f, textColor = accent600),
+            createParams(context, leftDp = ${cfg.numMargin}f)
+        )
+    }
+}`;
+            } else if (currentStyle === 11) {
+                code = `// --- RENDER STYLE 11 IN KOTLIN ---
+private fun buildStyle11(context: Context): View {
+    val backClock = statusbarBackClock(context)
+    return LinearLayout(context).apply {
+        orientation = LinearLayout.HORIZONTAL
+        gravity = Gravity.CENTER
+        background = ZkClockDrawables.getContainerBackground(11, context)
+        setPadding(dpToPx(context, 6f), dpToPx(context, 0.8f), dpToPx(context, 6f), dpToPx(context, 0.8f))
+
+        addView(createTextClock(context, "hh:mm a", "HH:mm", textSizeDp = ${cfg.timeSize}f, textColor = backClock).apply {
+            background = ZkClockDrawables.getInnerTimeBackground(11, context)
+            setPadding(dpToPx(context, 2f), 0, dpToPx(context, 2f), dpToPx(context, 1f))
+        })
+        addView(createTextClock(context, "EEE MMM", "EEE MMM", textSizeDp = ${cfg.dateSize}f, textColor = Color.BLACK, singleLine = false, maxEms = ${cfg.maxEms}),
+            createParams(context, leftDp = ${cfg.dateMargin}f, topDp = 0.5f)
+        )
+        addView(createTextClock(context, "dd", "dd", textSizeDp = ${cfg.numSize}f, textColor = Color.RED),
+            createParams(context, leftDp = ${cfg.numMargin}f, topDp = 0.9f, rightDp = 3f)
+        )
+    }
+}`;
+            }
+            document.getElementById('codeOutput').innerText = code;
+        }
+
+        function copyCode() {
+            const code = document.getElementById('codeOutput').innerText;
+            navigator.clipboard.writeText(code).then(() => {
+                alert('Đã copy mã nguồn Kotlin vào Clipboard!');
+            });
+        }
+
+        loadStyle(5);
+    </script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+# Ignore heavy build directories
+HyperCeiler-2.10.166/.gradle/
+HyperCeiler-2.10.166/build/
+HyperCeiler-2.10.166/*/build/
+HyperCeiler-2.10.166/app/build/
+HyperCeiler-2.10.166/library/*/build/
+
+# Ignore credentials & local configs
+HyperCeiler-2.10.166/local.properties
+HyperCeiler-2.10.166/signing.properties
+HyperCeiler-2.10.166/gpr.properties
+
+# Ignore large APK files, raw ROM zips, and recovery images
+*.apk
+*.zip
+*.img
+
+# Ignore large decompiled reference folders (gigabytes of files)
+old_apk_mod_reference/

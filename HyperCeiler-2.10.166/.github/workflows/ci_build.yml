@@ -1,0 +1,285 @@
+name: CI Build
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+    paths-ignore:
+      - ".github/**"
+      - "!.github/workflows/**"
+      - ".idea/"
+      - "doc/*"
+      - "*.md"
+      - "imgs/*"
+      - "app/src/assets/**"
+      - "crowdin.yml"
+  push:
+    branches: [main]
+    paths-ignore:
+      - ".github/**"
+      - "!.github/workflows/**"
+      - ".idea/"
+      - "doc/*"
+      - "*.md"
+      - "imgs/*"
+      - "app/src/assets/**"
+      - ".github/workflows/crowdin.yml"
+      - "crowdin.yml"
+  workflow_dispatch:
+
+jobs:
+  build_app:
+    if: |
+      (
+        startsWith(github.event.head_commit.message, 'app: update version ')
+        ||
+        (
+          !contains(github.event.head_commit.message, '[release]')
+          && !contains(github.event.head_commit.message, '[beta]')
+          && !contains(github.event.head_commit.message, 'app: update version')
+        )
+      )
+    runs-on: macos-latest
+    name: Build App
+    steps:
+      - name: Checkout Git Repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          submodules: true
+
+      - name: Setup JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-overwrite-existing: true
+
+      - name: Create Sign File
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        run: |
+          touch signing.properties
+          echo storePassword=${{ secrets.KEY_STORE_PASSWORD }} >> signing.properties
+          echo keyAlias=${{ secrets.ALIAS }} >> signing.properties
+          echo keyPassword='${{ secrets.KEY_STORE_PASSWORD }}' >> signing.properties
+          echo storeFile=../key.jks >> signing.properties
+          echo ${{ secrets.SIGNING_KEY }} | base64 --decode > key.jks
+          echo "GIT_ACTOR=${{ secrets.GIT_ACTOR }}" >> $GITHUB_ENV
+          echo "GIT_TOKEN=${{ secrets.GIT_TOKEN }}" >> $GITHUB_ENV
+
+      - name: Build with Gradle (Canary)
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        shell: bash
+        run: |
+          ./gradlew assembleCanary
+          echo "IS_DEBUG=false" >> $GITHUB_ENV
+
+      - name: Build with Gradle (Debug)
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          ./gradlew assembleDebug
+          echo "IS_DEBUG=true" >> $GITHUB_ENV
+
+      - name: Find APKs
+        run: |
+          if [ ${{ env.IS_DEBUG }} = true ]; then
+            APK_FILE=$(find app/build/outputs/apk/debug -name '*.apk')
+          else
+            APK_FILE=$(find app/build/outputs/apk/canary -name '*.apk')
+          fi
+          echo "APK_FILE=$APK_FILE" >> $GITHUB_ENV
+          echo "APK_FILE_NAME=$(basename $APK_FILE .apk)" >> $GITHUB_ENV
+
+      - name: Show APKs SHA256
+        if: success()
+        run: |
+          echo "### Build Success" >> $GITHUB_STEP_SUMMARY
+          echo "|Artifact|SHA256|" >> $GITHUB_STEP_SUMMARY
+          echo "|:---:|:---|" >> $GITHUB_STEP_SUMMARY
+          APK_SHA256=($(shasum -a 256 ${{ env.APK_FILE }}))
+          if [ ${{ env.IS_DEBUG }} = true ]; then
+            echo "|Debug|$APK_SHA256" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "|Canary|$APK_SHA256" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Upload APKs
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ env.APK_FILE_NAME }}
+          path: ${{ env.APK_FILE }}
+          compression-level: 9
+
+  push_to_canary_group:
+    if: |
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      github.ref_type != 'tag' &&
+      !contains(github.event.head_commit.message, '[skp]') &&
+      !contains(github.event.head_commit.message, 's#') &&
+      (
+        startsWith(github.event.head_commit.message, 'app: update version ')
+        ||
+        (
+          !contains(github.event.head_commit.message, '[release]')
+          && !contains(github.event.head_commit.message, '[beta]')
+          && !contains(github.event.head_commit.message, 'app: update version')
+        )
+      )
+    runs-on: ubuntu-latest
+    name: Push to Canary Channel
+    needs: build_app
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v8
+        with:
+          path: artifacts
+
+      - name: Find Artifacts
+        run: |
+          echo "APK_FILE_CANARY=$(find artifacts -name '*.apk')" >> $GITHUB_ENV
+
+      - name: Build Commit Messages
+        run: |
+          python3 << 'EOF'
+          import json
+          import os
+          import re
+
+          event = json.load(open(os.environ["GITHUB_EVENT_PATH"], "r"))
+          commits = event.get("commits", [])
+          compare_url = event.get("compare", "")
+          caption_limit = 1024
+
+          def escape_code_block(text):
+              return text.replace("\\", "\\\\").replace("`", "\\`")
+
+          def parse_commit(commit):
+              msg = commit.get("message", "").strip() or "(empty commit message)"
+
+              authors = {commit.get("author", {}).get("name", "Unknown")}
+              body_lines = []
+              for line in msg.splitlines():
+                  m = re.match(r"Co-authored-by:\s*(.+?)\s*<", line)
+                  if m:
+                      authors.add(m.group(1))
+                      continue
+                  body_lines.append(line)
+
+              clean_msg = "\n".join(body_lines).strip() or "(empty commit message)"
+              title = next(
+                  (line.strip() for line in clean_msg.splitlines() if line.strip()),
+                  "(empty commit message)",
+              )
+              return clean_msg, title, ", ".join(sorted(authors))
+
+          parsed_commits = [parse_commit(commit) for commit in commits]
+
+          def build_full_caption():
+              lines = ["New push to GitHub", "Branch: OS3"]
+              for clean_msg, _, authors in parsed_commits:
+                  block = escape_code_block(f"{clean_msg}\nby {authors}")
+                  lines.extend(["```", block, "```"])
+              if compare_url:
+                  lines.append(f"Details: [compare]({compare_url})")
+              return "\n".join(lines).strip()
+
+          def build_title_only_caption():
+              footer = f"\nDetails: [compare]({compare_url})" if compare_url else ""
+              lines = ["New push to GitHub", "Branch: OS3"]
+
+              for index, (_, title, _) in enumerate(parsed_commits):
+                  candidate_lines = lines + ["```", escape_code_block(title), "```"]
+                  candidate = "\n".join(candidate_lines) + footer
+                  if len(candidate) <= caption_limit:
+                      lines = candidate_lines
+                      continue
+
+                  remaining = len(parsed_commits) - index
+                  summary = f"And {remaining} more commits"
+                  if len("\n".join(lines + [summary]) + footer) <= caption_limit:
+                      lines.append(summary)
+                  break
+
+              return ("\n".join(lines) + footer).strip()
+
+          caption = build_full_caption()
+          if len(caption) > caption_limit:
+              caption = build_title_only_caption()
+
+          if len(caption) > caption_limit:
+              caption = "\n".join(
+                  line
+                  for line in [
+                      "New push to GitHub",
+                      "Branch: OS3",
+                      "",
+                      f"Details: [compare]({compare_url})" if compare_url else "",
+                  ]
+                  if line
+              )
+
+          with open("commit_caption.txt", "w", encoding="utf-8") as f:
+              f.write(caption)
+          EOF
+
+
+      - name: Post to Canary Channel
+        shell: bash
+        env:
+          GROUP_ID: ${{ secrets.CHANNEL_ID }}
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          CANARY: ${{ env.APK_FILE_CANARY }}
+        run: |
+          set -euo pipefail
+
+          CAPTION="$(cat commit_caption.txt)"
+
+          curl -fsS -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendDocument" \
+            -F chat_id="${GROUP_ID}" \
+            -F document="@${CANARY}" \
+            -F parse_mode="MarkdownV2" \
+            --form-string caption="${CAPTION}"
+
+  push_to_debug_group:
+    if: |
+      github.event_name == 'pull_request' &&
+      (
+        startsWith(github.event.head_commit.message, 'app: update version ')
+        ||
+        (
+          !contains(github.event.head_commit.message, '[release]')
+          && !contains(github.event.head_commit.message, '[beta]')
+          && !contains(github.event.head_commit.message, 'app: update version')
+        )
+      )
+    runs-on: ubuntu-latest
+    name: Push to Debug Group
+    needs: build_app
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v8
+        with:
+          path: artifacts
+
+      - name: Find Artifacts
+        run: |
+          echo "APK_FILE_DEBUG=$(find artifacts -name '*.apk')" >> $GITHUB_ENV
+
+      - name: Post to Debug Group
+        shell: bash
+        env:
+          GROUP_DEBUG_ID: ${{ secrets.GROUP_DEBUG_ID }}
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          DEBUG: ${{ env.APK_FILE_DEBUG }}
+          COMMIT_MESSAGE: |+
+            New push to GitHub
+            by `${{ github.triggering_actor }}`
+        run: |
+          ESCAPED=$(python3 -c 'import json,os,urllib.parse; print(urllib.parse.quote(json.dumps(os.environ["COMMIT_MESSAGE"])))')
+          cd ${{ github.workspace }}
+          curl -v "https://api.telegram.org/bot${BOT_TOKEN}/sendMediaGroup?chat_id=${GROUP_DEBUG_ID}&media=%5B%7B%22type%22:%22document%22,%20%22media%22:%22attach://debug%22,%22parse_mode%22:%22MarkdownV2%22,%22caption%22:${ESCAPED}%7D%5D" -F debug="@${DEBUG}"
