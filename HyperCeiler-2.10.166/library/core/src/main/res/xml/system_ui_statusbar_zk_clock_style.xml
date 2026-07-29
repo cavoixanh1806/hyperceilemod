@@ -40,5 +40,39 @@
             app:entryValues="@array/zk_clock_style_values"
             app:entryIcons="@array/zk_clock_style_icons" />
 
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="prefs_key_system_ui_statusbar_zk_clock_style_iconify_bg"
+            android:title="@string/system_ui_statusbar_zk_clock_style_iconify_bg" />
+
+        <SeekBarPreferenceCompat
+            app:defaultValue="100"
+            android:key="prefs_key_system_ui_statusbar_zk_clock_style_scale"
+            android:title="@string/system_ui_statusbar_zk_clock_style_scale"
+            app:defaultValueTitle="@string/array_default"
+            app:format="%s %%"
+            app:maxValue="150"
+            app:minValue="50"
+            app:showSeekBarValue="true"
+            app:stepValue="5" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="prefs_key_system_ui_monet"
+        android:title="@string/system_ui_monet_title">
+
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="prefs_key_system_ui_monet_overlay_custom"
+            android:summary="@string/system_ui_monet_overlay_custom_desc"
+            android:title="@string/system_ui_monet_overlay_custom" />
+
+        <ColorPickerPreference
+            android:defaultValue="-1"
+            android:dependency="prefs_key_system_ui_monet_overlay_custom"
+            android:key="prefs_key_system_ui_monet_overlay_custom_color"
+            android:title="@string/system_ui_monet_overlay_custom_color" />
+
     </PreferenceCategory>
 </PreferenceScreen>

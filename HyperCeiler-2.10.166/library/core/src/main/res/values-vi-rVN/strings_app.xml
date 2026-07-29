@@ -1643,4 +1643,37 @@
     <string name="milink_unlock_send_app">Mở khóa tất cả các ứng dụng chuyển tệp</string>
     <string name="milink_unlock_send_app_desc">Bạn cần chọn thêm phạm vi cho \"com.xiaomi.mirror\"</string>
     <string name="health_unlock_foucs_app_sign_white_list_title">Cho phép tất cả các ứng dụng gửi thông báo tập trung vào đồng hồ/vòng đeo tay.</string>
+
+    <!-- ZK Clock Style -->
+    <string name="system_ui_statusbar_zk_clock_style_title">Kiểu đồng hồ ZK</string>
+    <string name="system_ui_statusbar_zk_clock_style_summary">Kiểu đồng hồ tùy chỉnh trên thanh trạng thái với hình nền</string>
+    <string name="system_ui_statusbar_zk_clock_style_enable">Bật kiểu đồng hồ ZK</string>
+    <string name="system_ui_statusbar_zk_clock_style_select">Kiểu đồng hồ</string>
+    <string name="zk_style_0">Mặc định (Hệ thống)</string>
+    <string name="zk_style_1">Viên thuốc màu nhấn</string>
+    <string name="zk_style_2">Viên thuốc bất đối xứng</string>
+    <string name="zk_style_3">Cột kép + Ngày</string>
+    <string name="zk_style_4">Thanh Ngang Giờ | Ngày</string>
+    <string name="zk_style_5">Huy hiệu + Giây</string>
+    <string name="zk_style_6">Thanh Gradient Đỏ</string>
+    <string name="zk_style_7">Màu nhấn bất đối xứng + Ngày</string>
+    <string name="zk_style_8">Màu tối bất đối xứng + Ngày</string>
+    <string name="zk_style_9">Màu nhấn + Viền tối phía trong</string>
+    <string name="zk_style_10">Màu tối + Viền Gradient phía trong</string>
+    <string name="zk_style_11">Viên thuốc trắng + Ngày đỏ</string>
+    <string name="zk_style_12">Màu tối + Viền Gradient Cam</string>
+    <string name="zk_style_13">Gradient Xanh lá</string>
+    <string name="zk_style_14">Màu tối + Viền trắng phía trong</string>
+    <string name="zk_style_15">Gradient + Viền Cam phía trong</string>
+    <string name="zk_style_16">Iconify Kiểu 1 (Vạch ngăn cách)</string>
+    <string name="zk_style_17">Iconify Kiểu 2 (Chồng 2 dòng)</string>
+    <string name="zk_style_18">Iconify Kiểu 3 (Giờ màu nhấn)</string>
+    <string name="zk_style_19">Iconify Kiểu 4 (Đồng hồ Kim)</string>
+    <string name="zk_style_20">Iconify Kiểu 5 (Giây nhỏ)</string>
+    <string name="zk_style_21">Iconify Kiểu 6 (Lời chào Avatar)</string>
+    <string name="zk_style_22">Iconify Kiểu 7 (Phút màu nhấn)</string>
+    <string name="zk_style_23">Iconify Kiểu 8 (Bebas Chồng dọc)</string>
+    <string name="zk_style_24">Iconify Kiểu 9 (Hộp bo cong Gradient)</string>
+    <string name="system_ui_statusbar_zk_clock_style_iconify_bg">Bật nền hộp cho các kiểu Iconify</string>
+    <string name="system_ui_statusbar_zk_clock_style_scale">Tỷ lệ kích thước đồng hồ ZK</string>
 </resources>

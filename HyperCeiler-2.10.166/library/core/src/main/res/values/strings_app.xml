@@ -1772,4 +1772,15 @@
     <string name="zk_style_13">Green Gradient</string>
     <string name="zk_style_14">Dark + White Inner</string>
     <string name="zk_style_15">Gradient + Orange Inner</string>
+    <string name="zk_style_16">Iconify Style 1 (Line Separator)</string>
+    <string name="zk_style_17">Iconify Style 2 (Vertical Stacked)</string>
+    <string name="zk_style_18">Iconify Style 3 (Accent Hours)</string>
+    <string name="zk_style_19">Iconify Style 4 (Analog Clock)</string>
+    <string name="zk_style_20">Iconify Style 5 (Small Seconds)</string>
+    <string name="zk_style_21">Iconify Style 6 (Avatar Greeting)</string>
+    <string name="zk_style_22">Iconify Style 7 (Accent Minutes)</string>
+    <string name="zk_style_23">Iconify Style 8 (Bebas Stacked)</string>
+    <string name="zk_style_24">Iconify Style 9 (Gradient Capsule)</string>
+    <string name="system_ui_statusbar_zk_clock_style_iconify_bg">Enable Background for Iconify Styles</string>
+    <string name="system_ui_statusbar_zk_clock_style_scale">ZK Clock Scale</string>
 </resources>

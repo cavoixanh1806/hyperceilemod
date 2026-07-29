@@ -102,6 +102,15 @@
         <item>@string/zk_style_13</item>
         <item>@string/zk_style_14</item>
         <item>@string/zk_style_15</item>
+        <item>@string/zk_style_16</item>
+        <item>@string/zk_style_17</item>
+        <item>@string/zk_style_18</item>
+        <item>@string/zk_style_19</item>
+        <item>@string/zk_style_20</item>
+        <item>@string/zk_style_21</item>
+        <item>@string/zk_style_22</item>
+        <item>@string/zk_style_23</item>
+        <item>@string/zk_style_24</item>
     </string-array>
 
     <string-array name="zk_clock_style_values">
@@ -121,6 +130,15 @@
         <item>13</item>
         <item>14</item>
         <item>15</item>
+        <item>16</item>
+        <item>17</item>
+        <item>18</item>
+        <item>19</item>
+        <item>20</item>
+        <item>21</item>
+        <item>22</item>
+        <item>23</item>
+        <item>24</item>
     </string-array>
 
     <array name="zk_clock_style_icons">
@@ -140,5 +158,14 @@
         <item>@drawable/zk_clock_13</item>
         <item>@drawable/zk_clock_14</item>
         <item>@drawable/zk_clock_15</item>
+        <item>@drawable/zk_clock_16</item>
+        <item>@drawable/zk_clock_17</item>
+        <item>@drawable/zk_clock_18</item>
+        <item>@drawable/zk_clock_19</item>
+        <item>@drawable/zk_clock_20</item>
+        <item>@drawable/zk_clock_21</item>
+        <item>@drawable/zk_clock_22</item>
+        <item>@drawable/zk_clock_23</item>
+        <item>@drawable/zk_clock_24</item>
     </array>
 </resources>

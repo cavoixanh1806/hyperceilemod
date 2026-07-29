@@ -19,7 +19,7 @@
 
 ## 2. Architecture & Code Structure
 
-Instead of decompiling and rebuilding the closed-source `MiuiSystemUI.apk`, the ZK Clock style customization is hooked at runtime inside the **HyperCeiler** Xposed library:
+ZK Clock style customization is hooked at runtime inside the **HyperCeiler** Xposed library:
 
 ```
 n/HyperCeiler-2.10.166/library/libhook/src/main/java/.../statusbar/clock/
@@ -28,18 +28,15 @@ n/HyperCeiler-2.10.166/library/libhook/src/main/java/.../statusbar/clock/
 ```
 
 ### 2.1 Settings Integration
-The preferences toggle for the ZK Clock is integrated into the HyperCeiler Settings framework:
+The preference screens are integrated into the HyperCeiler Settings framework:
 * **Settings XML**: `library/core/src/main/res/xml/system_ui_statusbar_zk_clock_style.xml`
-* **Entry Keys**: `zk_clock_style` (Int database configuration: `0` for Disable, `1` - `15` for corresponding Styles).
-
-### 2.2 Hook Mechanisms
-`ZkClockStyleHook.kt` hooks into `com.android.systemui` package load, specifically targeted at the `MiuiClock` class constructor or inflation callback:
-* The original `MiuiClock` (a custom TextView) is hidden (`visibility = View.GONE`, `textSize = 0f`, layout width/height zeroed out).
-* The custom ZK layout view (`zkContainer`) is dynamically created in Kotlin code, then inserted into the parent container at the index position of the original clock view.
+* **Style Selector Dropdown**: `prefs_key_system_ui_statusbar_zk_clock_style_value` (mapped to dropdown previews).
+* **Capsule Toggle**: `prefs_key_system_ui_statusbar_zk_clock_style_iconify_bg` (enables capsule background for Iconify styles).
+* **Scale Slider (SeekBar)**: `prefs_key_system_ui_statusbar_zk_clock_style_scale` (customizes scale factor from 50% to 150%).
 
 ---
 
-## 3. Visual Layout Guidelines
+## 3. Visual Layout & Scaling Guidelines
 
 To ensure the clock layouts render beautifully across different device DPIs and status bar heights:
 
@@ -53,52 +50,57 @@ If the parent container forces `MATCH_PARENT` height on the custom clock, any ca
       gravity = Gravity.CENTER_VERTICAL
   }
   ```
-* Add the actual clock style view (`zkContainer`) to this wrapper with layout parameters height set to `WRAP_CONTENT` (or a fixed `22dp` height for Style 1 and 2):
+* Add the actual clock style view (`zkContainer`) to this wrapper with layout parameters height set to `WRAP_CONTENT` (or a scaled fixed height like `22dp * scale` for capsule backgrounds):
   ```kotlin
-  zkContainer.layoutParams = LinearLayout.LayoutParams(
-      ViewGroup.LayoutParams.WRAP_CONTENT,
-      ViewGroup.LayoutParams.WRAP_CONTENT // or dpToPx(context, 22f)
-  ).apply {
-      gravity = Gravity.CENTER_VERTICAL
+  val containerHeight = if (style in setOf(1, 2, 24) || (style in 16..23 && zkClockStyleIconifyBg)) {
+      dpToPx(context, 22f * zkClockStyleScale)
+  } else {
+      ViewGroup.LayoutParams.WRAP_CONTENT
   }
   ```
-* Apply the original clock layout parameters to the `wrapper` instead.
 
-### 3.2 Anti-Clipping Rule (No Negative Padding)
-* **Problem**: Applying negative top padding values (e.g. `setPadding(..., -1dp, ...)`) to view bounds causes the content to draw outside the view boundaries, which is clipped/cut off by the status bar's default `clipChildren=true` hierarchy.
-* **Rule**: Always keep the top padding of the view positive (e.g. `0dp` or `0.5dp`). To nudge the clock layout upwards slightly (standard offset for Style 4, 5, 6), apply a negative top margin to the LayoutParams:
+### 3.2 Dynamic Scale Slider
+A seekbar preference provides scaling factors (50% to 150%). The hook scales all layout characteristics proportionally:
+1. **Clock text size**: `scaledClockSizePx = systemClockSizePx * zkClockStyleScale`.
+2. **Layout margins/paddings**: Intercepted in `createParams` and multiplied by `zkClockStyleScale`.
+3. **Fixed components**: Separator lines, AnalogClock views, and avatar circle dimensions are multiplied by `zkClockStyleScale`.
+
+### 3.3 Anti-Clipping Rule (No Negative Padding)
+* **Problem**: Negative padding on view bounds causes clipping.
+* **Rule**: Keep padding positive. To offset vertical height, apply negative top margins on layout parameters:
   ```kotlin
   if (style in setOf(4, 5, 6)) {
-      topMargin = dpToPx(context, -1f)
+      topMargin = dpToPx(context, -1f * zkClockStyleScale)
   }
   ```
 
 ---
 
-## 4. Programmatic Drawables (ZkClockDrawables.kt)
+## 4. Dynamic Color Adaptation (Light/Dark Status Bar)
 
-Background pills and gradients are generated dynamically in code using Android SDK's `GradientDrawable` and `RippleDrawable` to eliminate static XML asset dependencies:
+To keep custom text readable when the status bar background switches (e.g. from dark home screen wallpaper to a white app background):
 
-* **Capsule Pills**:
-  ```kotlin
-  GradientDrawable().apply {
-      shape = GradientDrawable.RECTANGLE
-      setColor(backgroundColor)
-      setStroke(dpToPxInt(ctx, 1f), Color.WHITE)
-      cornerRadius = dpToPx(ctx, 15f)
-  }
-  ```
-* **Asymmetric Pills** (Style 8, 9): Constructed with custom corner radii:
-  ```kotlin
-  cornerRadii = floatArrayOf(r1, r1, r2, r2, r1, r1, r2, r2)
-  ```
-* **System Color Adaptation**: Colors adapt dynamically using dynamic resources (e.g. `system_accent1_300`, `system_accent1_500`) parsed at runtime.
+### 4.1 Hooks
+We hook `onDarkChanged(ArrayList areas, float darkIntensity, int tint)` and `setTextColor(int)` on `MiuiClock` to capture status bar color updates:
+* The original clock continues to receive these callbacks while hidden, letting us capture the target color `tint`.
+
+### 4.2 Tag-Based Recursive Colorization
+We walk the hierarchy of the custom container and colorize views based on their tags:
+* `"primary_text"`: Set to `tint` (light in dark mode, dark in light mode).
+* `"accent_text"`: Set to `accent1_300` in dark mode, and high-contrast `accent1_600`/`0xFF1976D2` in light mode.
+* `"separator_line"`: Dynamically updates background color matching the accent.
+* `"avatar_circle"`: Dynamically updates the GradientDrawable color matching the accent.
 
 ---
 
-## 5. Visual Clock Designer (zk_clock_designer.html)
-
-A custom HTML/CSS tool hosted in the workspace `n/zk_clock_designer.html` acts as a local WYSIWYG layout builder:
-1. Simulates status bar height and light/dark theme backgrounds.
-2. Supports dragging sliders to adjust text sizes, margin spacing, and EMS limits for Vietnamese and English locales.
-3. Automatically exports copy-pasteable Kotlin code for the modified style rules.
+## 5. Iconify Styles Merged (Styles 16 - 24)
+Nine clock styles were extracted from Iconify QS Header Clock module and recreated programmatically:
+* **Style 16 (Iconify 1)**: Time and Date separated by a vertical accent line.
+* **Style 17 (Iconify 2)**: Vertical stacked Date/Time.
+* **Style 18 (Iconify 3)**: Bold accent hour time.
+* **Style 19 (Iconify 4)**: Small Analog Clock + Date column.
+* **Style 20 (Iconify 5)**: Small Seconds aligned right-bottom.
+* **Style 21 (Iconify 6)**: Avatar circle and italicized greeting.
+* **Style 22 (Iconify 7)**: Overlapping accent minutes in bold italic.
+* **Style 23 (Iconify 8)**: BebasStacked month, day name, and dotted time.
+* **Style 24 (Iconify 9)**: Outer capsule with inner semi-transparent time badge.
