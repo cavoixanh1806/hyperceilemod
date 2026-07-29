@@ -8,10 +8,13 @@ Bản Fork tùy biến cá nhân của công cụ **HyperCeiler (Xposed/LSPosed 
 ---
 
 ## ✨ Tính năng nổi bật
-* **15 Kiểu Đồng Hồ ZK Style**: Hỗ trợ đầy đủ các giao diện đồng hồ đặc trưng (Dạng viên thuốc - Pills, Dạng khối vát - Asymmetric, Dạng dải màu - Gradients, Dạng tích hợp hiển thị giây - Seconds).
+* **24 Kiểu Đồng Hồ ZK Style**: Hỗ trợ đầy đủ 15 kiểu ZK gốc và tích hợp thêm **9 kiểu đồng hồ QS Header độc đáo từ Iconify** (từ Style 16 đến Style 24).
 * **Không can thiệp file hệ thống**: Hoạt động hoàn toàn qua cơ chế Xposed, an toàn, dễ dàng cài đặt/gỡ bỏ mà không sợ treo logo (bootloop).
 * **Căn chỉnh động (Vertical Auto-Centering)**: Sử dụng cấu trúc container trung gian giúp căn giữa dọc tự động đồng hồ trên mọi độ cao thanh trạng thái, không bị lỗi kéo dãn tràn viền.
 * **Tự động tránh xung đột**: Tự động vô hiệu hóa tính năng căn chỉnh đồng hồ mặc định của HyperCeiler khi bật ZK Clock để tránh lỗi ghi đè lẫn nhau.
+* **Tuỳ chọn Hộp Nền (Capsule Background)**: Hỗ trợ bật/tắt nền hộp bo cong cho các mẫu Iconify để tạo giao diện capsule hiện đại.
+* **Đồng bộ màu sắc tự động (Dynamic Theme Tinting)**: Tự động đổi màu chữ sang màu đen và đổi màu nhấn sang tông màu tương phản cao khi thanh trạng thái chuyển sang nền sáng (White Status Bar), giúp hiển thị rõ ràng, không bị chìm chữ.
+* **Thanh kéo chỉnh tỉ lệ (Clock Scale Slider)**: Cho phép tăng/giảm kích thước toàn bộ đồng hồ linh hoạt từ **50% đến 150%** ngay trong phần cài đặt mà không cần khởi động lại.
 
 ---
 
@@ -34,11 +37,8 @@ Tệp APK đầu ra sẽ nằm tại:
 `app/build/outputs/apk/debug/HyperCeiler-x.xx.xxx-xxxx-debug.apk`
 
 ### 2. Cài đặt trực tiếp qua ADB
-Nếu điện thoại của bạn đã bật ADB Debug và kết nối với máy tính, bạn có thể đẩy nhanh file APK sang bộ nhớ máy và tự động cài đặt đè bằng lệnh:
+Nếu điện thoại của bạn đã bật ADB Debug và kết nối với máy tính, bạn có thể cài đặt đè bằng lệnh:
 ```powershell
-# Gửi tệp APK sang thư mục Download của điện thoại
-adb push app/build/outputs/apk/debug/*.apk /sdcard/Download/app-debug.apk
-
 # Cài đặt đè trực tiếp lên thiết bị
 adb install -r app/build/outputs/apk/debug/*.apk
 ```
@@ -53,5 +53,6 @@ adb install -r app/build/outputs/apk/debug/*.apk
 5. Mở ứng dụng **HyperCeiler** trên màn hình chính:
    * Đi tới: **Status Bar (Thanh trạng thái)** -> **Clock (Đồng hồ)** -> **ZK Clock Style**.
    * Bật công tắc **Enable ZK Clock Styles**.
-   * Chọn mẫu đồng hồ bạn yêu thích tại mục **Clock style** (Ví dụ: Style 5 hoặc Style 11).
+   * Chọn mẫu đồng hồ bạn yêu thích tại mục **Clock style** (Ví dụ: Style 24).
+   * Tuỳ chỉnh các mục: **Bật nền hộp cho các kiểu Iconify**, **Tỷ lệ kích thước đồng hồ ZK**.
    * Khởi động lại nhanh SystemUI để áp dụng thay đổi.
