@@ -1,10 +1,10 @@
 ---
-description: 
+description: HyperCeiler cvxLAB status bar clock customization workflow
 ---
 
-# HyperZK Clock Mod — Complete Xposed Workflow Reference
+# Hypercvx Clock Mod — Complete Xposed Workflow Reference
 
-> **Purpose**: This document captures the architecture, codebase hooks, layout constraints, and build configurations for dynamically injecting custom ZK Status Bar Clock Styles into HyperOS / MIUI SystemUI via the HyperCeiler LSPosed module, replacing the legacy decompilation & systemless overlay method.
+> **Purpose**: This document captures the architecture, codebase hooks, layout constraints, and build configurations for dynamically injecting custom cvx Status Bar Clock Styles into HyperOS / MIUI SystemUI via the HyperCeiler LSPosed module, replacing the legacy decompilation & systemless overlay method.
 
 ---
 
@@ -23,11 +23,11 @@ description:
 
 ## 2. Architecture & Code Structure
 
-ZK Clock style customization is hooked at runtime inside the **HyperCeiler** Xposed library:
+cvx Clock style customization is hooked at runtime inside the **HyperCeiler** Xposed library:
 
 ```
 n/HyperCeiler-2.10.166/library/libhook/src/main/java/.../statusbar/clock/
-├── ZkClockStyleHook.kt    # Main Xposed Hook entrypoint, view builder, and layouts
+├── ZkClockStyleHook.kt    # Main Xposed Hook entrypoint, view builder, and layouts (cvx/cvxLAB logic)
 └── ZkClockDrawables.kt    # Programmatic factory for capsules, gradients, and ripple drawables
 ```
 

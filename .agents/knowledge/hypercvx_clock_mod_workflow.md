@@ -1,6 +1,6 @@
-# HyperZK Clock Mod — Complete Xposed Workflow Reference
+# Hypercvx Clock Mod — Complete Xposed Workflow Reference
 
-> **Purpose**: This document captures the architecture, codebase hooks, layout constraints, and build configurations for dynamically injecting custom ZK Status Bar Clock Styles into HyperOS / MIUI SystemUI via the HyperCeiler LSPosed module, replacing the legacy decompilation & systemless overlay method.
+> **Purpose**: This document captures the architecture, codebase hooks, layout constraints, and build configurations for dynamically injecting custom cvx Status Bar Clock Styles into HyperOS / MIUI SystemUI via the HyperCeiler LSPosed module, replacing the legacy decompilation & systemless overlay method.
 
 ---
 
@@ -19,17 +19,18 @@
 
 ## 2. Architecture & Code Structure
 
-ZK Clock style customization is hooked at runtime inside the **HyperCeiler** Xposed library:
+cvx Clock style customization is hooked at runtime inside the **HyperCeiler** Xposed library:
 
 ```
 n/HyperCeiler-2.10.166/library/libhook/src/main/java/.../statusbar/clock/
-├── ZkClockStyleHook.kt    # Main Xposed Hook entrypoint, view builder, and layouts
+├── ZkClockStyleHook.kt    # Main Xposed Hook entrypoint, view builder, and layouts (cvx/cvxLAB logic)
 └── ZkClockDrawables.kt    # Programmatic factory for capsules, gradients, and ripple drawables
 ```
 
 ### 2.1 Settings Integration
 The preferences are integrated into the HyperCeiler Settings framework under a dedicated section:
 * **Dedicated Section**: **`cvxLAB`** (fragment `ZkClockStyleSettings`), positioned at the very top of the Status Bar settings screen (`system_ui_status_bar.xml`), directly above the **Icons** (`IconManageNewSettings`) menu.
+* **Search Indexing Requirement**: The preference entry in `system_ui_status_bar.xml` MUST have a key specified (`android:key="prefs_key_cvx_lab"`), otherwise the search engine (`SearchHelper.java`) will skip indexing the screen and its underlying preferences.
 * **Settings XML**: `library/core/src/main/res/xml/system_ui_statusbar_zk_clock_style.xml` (screen title `cvxLAB`).
 * **Style Selector Dropdown**: `prefs_key_system_ui_statusbar_zk_clock_style_value` (mapped to dropdown previews).
 * **Capsule Toggle**: `prefs_key_system_ui_statusbar_zk_clock_style_iconify_bg` (enables capsule background for Iconify styles).
@@ -91,6 +92,12 @@ We walk the hierarchy of the custom container and colorize views based on their 
 * `"accent_text"`: Set to `accent1_300` in dark mode, and high-contrast `accent1_600`/`0xFF1976D2` in light mode.
 * `"separator_line"`: Dynamically updates background color matching the accent.
 * `"avatar_circle"`: Dynamically updates the GradientDrawable color matching the accent.
+
+### 4.3 Capsule Background Adaptation (Light/Dark Mode Contrast)
+To prevent contrast overlay issues in dark mode (where `accent1_300` accent text is placed directly over an `accent1_300` pastel capsule background), the container capsule background adapts dynamically:
+* **Light Mode (Light background, dark text)**: Capsule background uses the solid pastel accent color (`accent1_300`).
+* **Dark Mode (Dark background, light text)**: Capsule background switches to a premium dark semi-transparent capsule (`0x4D000000` - 30% opacity black), letting the light/accent clock text stand out clearly.
+* **Padding Preservation**: Modifying the background drawable of a view resets its layout paddings. Always explicitly re-apply layout paddings immediately after setting the background drawable.
 
 ---
 
