@@ -22,6 +22,7 @@ import android.content.Context
 import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.Drawable
 import android.os.Handler
 import android.os.Looper
 import android.util.TypedValue
@@ -377,13 +378,21 @@ object ZkClockStyleHook : BaseHook() {
             else -> null
         }
         if (view != null && style in 16..23 && zkClockStyleIconifyBg) {
-            view.background = ZkClockDrawables.getContainerBackground(1, context)
-            view.setPadding(dpToPx(context, 7f), 0, dpToPx(context, 7f), 0)
+            view.background = createDarkCapsule(context)
+            view.setPadding(dpToPx(context, 7f * zkClockStyleScale), 0, dpToPx(context, 7f * zkClockStyleScale), 0)
         }
         return view
     }
 
     // ==================== Helper Methods ====================
+
+    private fun createDarkCapsule(context: Context): Drawable {
+        return GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            setColor(0x4D000000) // ~30% alpha black
+            cornerRadius = dpToPxF(context, 15f * zkClockStyleScale)
+        }
+    }
 
     private fun updateCustomClockTint(miuiClock: TextView, tint: Int) {
         val parent = miuiClock.parent as? ViewGroup ?: return
@@ -404,6 +413,23 @@ object ZkClockStyleHook : BaseHook() {
             resolveColor(context, "accent1_600", 0xFF1976D2.toInt())
         } else {
             resolveColor(context, "accent1_300", 0xFF7CACF8.toInt())
+        }
+
+        // Dynamically update the capsule background if enabled
+        val containerGroup = customContainer as? ViewGroup
+        if (containerGroup != null && containerGroup.childCount > 0) {
+            val zkContainer = containerGroup.getChildAt(0)
+            val style = zkClockStyle
+            if (zkContainer != null && style in 16..23 && zkClockStyleIconifyBg) {
+                if (isDark) {
+                    // LIGHT mode: use solid light accent capsule
+                    zkContainer.background = ZkClockDrawables.getContainerBackground(1, context)
+                } else {
+                    // DARK mode: use dark semi-transparent capsule
+                    zkContainer.background = createDarkCapsule(context)
+                }
+                zkContainer.setPadding(dpToPx(context, 7f * zkClockStyleScale), 0, dpToPx(context, 7f * zkClockStyleScale), 0)
+            }
         }
 
         updateTintRecursively(customContainer, primaryColor, accentColor)
