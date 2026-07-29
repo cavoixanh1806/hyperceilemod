@@ -108,10 +108,5 @@
             android:title="@string/system_ui_statusbar_clock_style_f"
             app:entries="@array/new_clock_style"
             app:entryValues="@array/new_clock_style_value" />
-
-        <Preference
-            android:title="@string/system_ui_statusbar_zk_clock_style_title"
-            android:summary="@string/system_ui_statusbar_zk_clock_style_summary"
-            android:fragment="com.sevtinge.hyperceiler.hooker.systemui.statusbar.ZkClockStyleSettings" />
     </PreferenceCategory>
 </PreferenceScreen>

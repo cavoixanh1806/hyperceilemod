@@ -1645,6 +1645,7 @@
     <string name="health_unlock_foucs_app_sign_white_list_title">Cho phép tất cả các ứng dụng gửi thông báo tập trung vào đồng hồ/vòng đeo tay.</string>
 
     <!-- ZK Clock Style -->
+    <string name="cvx_lab_title">cvxLAB</string>
     <string name="system_ui_statusbar_zk_clock_style_title">Kiểu đồng hồ ZK</string>
     <string name="system_ui_statusbar_zk_clock_style_summary">Kiểu đồng hồ tùy chỉnh trên thanh trạng thái với hình nền</string>
     <string name="system_ui_statusbar_zk_clock_style_enable">Bật kiểu đồng hồ ZK</string>

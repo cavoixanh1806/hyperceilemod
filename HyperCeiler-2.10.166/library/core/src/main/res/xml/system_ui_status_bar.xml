@@ -22,6 +22,10 @@
     app:quick_restart="com.android.systemui">
     <PreferenceCategory>
         <Preference
+            android:fragment="com.sevtinge.hyperceiler.hooker.systemui.statusbar.ZkClockStyleSettings"
+            android:title="@string/cvx_lab_title" />
+
+        <Preference
             android:fragment="com.sevtinge.hyperceiler.hooker.systemui.statusbar.IconManageNewSettings"
             android:title="@string/system_ui_statusbar_iconmanage_title" />
 

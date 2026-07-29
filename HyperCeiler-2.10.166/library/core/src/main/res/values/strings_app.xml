@@ -1752,6 +1752,7 @@
     <string name="close_source">Close source projects</string>
 
     <!-- ZK Clock Style -->
+    <string name="cvx_lab_title">cvxLAB</string>
     <string name="system_ui_statusbar_zk_clock_style_title">ZK Clock Style</string>
     <string name="system_ui_statusbar_zk_clock_style_summary">Custom status bar clock styles with backgrounds</string>
     <string name="system_ui_statusbar_zk_clock_style_enable">Enable ZK Clock Styles</string>
