@@ -28,8 +28,9 @@ n/HyperCeiler-2.10.166/library/libhook/src/main/java/.../statusbar/clock/
 ```
 
 ### 2.1 Settings Integration
-The preference screens are integrated into the HyperCeiler Settings framework:
-* **Settings XML**: `library/core/src/main/res/xml/system_ui_statusbar_zk_clock_style.xml`
+The preferences are integrated into the HyperCeiler Settings framework under a dedicated section:
+* **Dedicated Section**: **`cvxLAB`** (fragment `ZkClockStyleSettings`), positioned at the very top of the Status Bar settings screen (`system_ui_status_bar.xml`), directly above the **Icons** (`IconManageNewSettings`) menu.
+* **Settings XML**: `library/core/src/main/res/xml/system_ui_statusbar_zk_clock_style.xml` (screen title `cvxLAB`).
 * **Style Selector Dropdown**: `prefs_key_system_ui_statusbar_zk_clock_style_value` (mapped to dropdown previews).
 * **Capsule Toggle**: `prefs_key_system_ui_statusbar_zk_clock_style_iconify_bg` (enables capsule background for Iconify styles).
 * **Scale Slider (SeekBar)**: `prefs_key_system_ui_statusbar_zk_clock_style_scale` (customizes scale factor from 50% to 150%).
